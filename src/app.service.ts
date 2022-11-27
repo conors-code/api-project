@@ -1,3 +1,5 @@
+import * as dotenv from "dotenv";
+dotenv.config();
 import { HttpException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -5,6 +7,7 @@ import { ethers } from 'ethers';
 import { AlchemyProvider, InfuraProvider } from "@ethersproject/providers";
 //import tokenJson from './assets/MyToken.json';
 import * as tokenJson from './assets/MyToken.json';
+
 
 const TOKENISED_VOTE_CONTRACT_ADDR = "0x4659Af90cF5076c1Dbe135775A8572db8A1f8E55";
 
@@ -28,6 +31,6 @@ export class AppService {
     return {result : `tx hash for tokens minted for ${address}`};
   }
   getTokenAddress() {
-    return {result: TOKENISED_VOTE_CONTRACT_ADDR};
+    return {result: process.env.TOKENISED_VOTE_CONTRACT_ADDR};
   } 
 }
