@@ -1,5 +1,3 @@
-import * as dotenv from "dotenv";
-dotenv.config();
 import { HttpException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,11 +13,13 @@ const TOKENISED_VOTE_CONTRACT_ADDR = "0x4659Af90cF5076c1Dbe135775A8572db8A1f8E55
 export class AppService {
 
   provider: ethers.providers.Provider;
+  tokenVoteContractAddr : string;
 
   constructor(private configService : ConfigService) {
-    //const alchemyApiKey = this.configService.get<string>("ALCHEMY_API_KEY");
+    const alchemyApiKey = this.configService.get<string>("ALCHEMY_API_KEY");
+    this.tokenVoteContractAddr = this.configService.get<string>("TOKENISED_VOTE_CONTRACT_ADDR");
     //const provider = new AlchemyProvider("goerli", alchemyApiKey);
-    this.provider = ethers.getDefaultProvider("goerli");
+    //this.provider = ethers.getDefaultProvider("goerli");
   }
 
   async claimTokens(address: string) {
@@ -31,6 +31,6 @@ export class AppService {
     return {result : `tx hash for tokens minted for ${address}`};
   }
   getTokenAddress() {
-    return {result: process.env.TOKENISED_VOTE_CONTRACT_ADDR};
+    return {result: this.tokenVoteContractAddr};
   } 
 }
