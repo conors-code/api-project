@@ -1,34 +1,47 @@
 import { HttpException } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ethers } from 'ethers';
+import { ethers, Wallet } from 'ethers';
 import { AlchemyProvider, InfuraProvider } from "@ethersproject/providers";
 //import tokenJson from './assets/MyToken.json';
 import * as tokenJson from './assets/MyToken.json';
-
-
-const TOKENISED_VOTE_CONTRACT_ADDR = "0x4659Af90cF5076c1Dbe135775A8572db8A1f8E55";
 
 @Injectable()
 export class AppService {
 
   provider: ethers.providers.Provider;
   tokenVoteContractAddr : string;
+  signerWallet: Wallet;
 
   constructor(private configService : ConfigService) {
     const alchemyApiKey = this.configService.get<string>("ALCHEMY_API_KEY");
+    const walletPrivateKey = this.configService.get<string>("PRIVATE_KEY");
     this.tokenVoteContractAddr = this.configService.get<string>("TOKENISED_VOTE_CONTRACT_ADDR");
-    //const provider = new AlchemyProvider("goerli", alchemyApiKey);
+    this.provider = new AlchemyProvider("goerli", alchemyApiKey);
+    this.signerWallet = new Wallet(walletPrivateKey);
     //this.provider = ethers.getDefaultProvider("goerli");
   }
 
-  async claimTokens(address: string) {
+  async claimTokens(mintToWalletAddress: string) {
     //TODO: build the contract object
     //TODO: pikc the signer using the dotenv keys
     //TODO connect the contract object to the signer
     //TODO make the transaction to mint tokens
     //TODO await the transaction, get the receipt, return the hash.
-    return {result : `tx hash for tokens minted for ${address}`};
+    const walletAddress = this.signerWallet.address;
+    const signer = this.signerWallet.connect(this.provider);
+    const voteTokenContract = new ethers.Contract(
+      this.tokenVoteContractAddr, tokenJson.abi, this.provider);
+    const signedVoteTokenContract = voteTokenContract.connect(signer);
+    console.log(`minting using contract address ${signedVoteTokenContract.address}.`);
+    const mintTx = await signedVoteTokenContract.mint(mintToWalletAddress,
+      ethers.utils.parseEther("10") //TODO: replace this with a correct value
+    );
+    console.log(`mint Tx is ${mintTx}`);
+    const mintTxReceipt = await mintTx.wait();
+    console.log(`mintTxReceipt is ${mintTxReceipt} after awaitng mint Tx ${mintTx}`);
+    console.log(`${mintTxReceipt.hash} is tx hash for tokens minted for ${mintToWalletAddress}`);
+    return {result : mintTxReceipt.hash};
   }
   getTokenAddress() {
     return {result: this.tokenVoteContractAddr};
