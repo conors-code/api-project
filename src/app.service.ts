@@ -31,18 +31,19 @@ export class AppService {
     const walletAddress = this.signerWallet.address;
     const signer = this.signerWallet.connect(this.provider);
     const voteTokenContract = new ethers.Contract(
-      this.tokenVoteContractAddr, tokenJson.abi, this.provider);
+      this.tokenVoteContractAddr, tokenJson.abi, signer);
     const signedVoteTokenContract = voteTokenContract.connect(signer);
     console.log(`minting using contract address ${signedVoteTokenContract.address}.`);
     const mintTx = await signedVoteTokenContract.mint(mintToWalletAddress,
       ethers.utils.parseEther("10") //TODO: replace this with a correct value
     );
-    console.log(`mint Tx is ${mintTx}`);
+    console.log(`mint Tx .hash is ${mintTx.hash}`);
     const mintTxReceipt = await mintTx.wait();
-    console.log(`mintTxReceipt is ${mintTxReceipt} after awaitng mint Tx ${mintTx}`);
-    console.log(`${mintTxReceipt.hash} is tx hash for tokens minted for ${mintToWalletAddress}`);
-    return {result : mintTxReceipt.hash};
+    console.log(`mintTxReceipt is ${mintTxReceipt.transactionHash} after awaiting mint Tx ${mintTx.hash}`);
+    console.log(`${mintTxReceipt.transactionHash} is tx hash for tokens minted for ${mintToWalletAddress}`);
+    return {result : mintTxReceipt.transactionHash};
   }
+
   getTokenAddress() {
     return {result: this.tokenVoteContractAddr};
   } 
