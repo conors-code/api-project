@@ -5,6 +5,7 @@ import { ethers, Wallet } from 'ethers';
 import { AlchemyProvider, InfuraProvider } from '@ethersproject/providers';
 //import tokenJson from './assets/MyToken.json';
 import * as tokenJson from './assets/MyToken.json';
+import * as ballotJson from './assets/Ballot.json';
 
 @Injectable()
 export class AppService {
@@ -60,15 +61,34 @@ export class AppService {
     return { result: this.tokenVoteContractAddr };
   }
 
-  connectBallot(ballotContractAddress: string) {
+  async connectBallot(ballotContractAddress: string) {
     const signer = this.signerWallet.connect(this.provider);
+    
+    const ballotContract = new ethers.Contract(
+      ballotContractAddress,
+      ballotJson.abi,
+      signer,
+    );
+
+    const signedballotContract = ballotContract.connect(signer);
+    /*console.log(
+      `getting ProposalInfo[] using ballot address ${signedballotContract.address}.`
+    );*/
+    const proposalInfosTx = await signedballotContract.proposalsInfo();
+    
+    console.log(`proposalInfosTx Tx .hash is ${proposalInfosTx.hash}`);
+    /*console.log(
+      `after awaiting proposalInfo Tx ${proposalInfosTx.hash}`,
+    );*/
+
+    console.log("start JSON.stringify(proposalInfosTx)");
+
+    console.log(JSON.stringify(proposalInfosTx));
+    console.log("end JSON.stringify(proposalInfosTx)");
 
     // TODO: Attach to the contract address
     return {
-      result: [
-        { name: 'Proposal 1', id: '1' },
-        { name: 'Proposal 2', id: '2' },
-      ],
+      result: proposalInfosTx
     };
   }
 }
