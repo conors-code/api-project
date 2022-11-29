@@ -12,8 +12,8 @@ export class delegateVoteDto {
 }
 
 export class castVoteDto {
-  proposalNumber: number;
-  voteAmount: number;
+  proposalNumber: string;
+  voteAmount: string;
 }
 
 @Controller()

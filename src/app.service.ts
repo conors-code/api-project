@@ -111,10 +111,10 @@ export class AppService {
     };
   }
 
-  async castVote(proposalNumber: number, voteAmount: number) {
+  async castVote(proposalNumber: string, voteAmount: string) {
     const voteTx = await this.signedBallotContract.vote(
       ethers.BigNumber.from(proposalNumber),
-      ethers.utils.parseEther(voteAmount.toString())
+      ethers.utils.parseEther(voteAmount)
     );
 
     const voteReceipt = await voteTx.wait();
