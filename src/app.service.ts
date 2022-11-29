@@ -45,7 +45,7 @@ export class AppService {
     );
     const mintTx = await signedVoteTokenContract.mint(
       mintToWalletAddress,
-      ethers.utils.parseEther('10'), //TODO: replace this with a correct value
+      ethers.utils.parseEther('500'),
     );
     console.log(`mint Tx .hash is ${mintTx.hash}`);
     const mintTxReceipt = await mintTx.wait();
@@ -113,8 +113,8 @@ export class AppService {
 
   async castVote(proposalNumber: number, voteAmount: number) {
     const voteTx = await this.signedBallotContract.vote(
-      proposalNumber,
-      voteAmount,
+      ethers.BigNumber.from(proposalNumber),
+      ethers.utils.parseEther(voteAmount.toString())
     );
 
     const voteReceipt = await voteTx.wait();
