@@ -7,6 +7,14 @@ export class claimTokensDto {
 export class connectBallotDto {
   address: string;
 }
+export class delegateVoteDto {
+  address: string;
+}
+
+export class castVoteDto {
+  proposalNumber: number;
+  voteAmount: number;
+}
 
 @Controller()
 export class AppController {
@@ -24,5 +32,15 @@ export class AppController {
   @Post('connect-ballot')
   connectBallot(@Body() body: connectBallotDto) {
     return this.appService.connectBallot(body.address);
+  }
+
+  @Post('delegate-vote')
+  delegateVote(@Body() body: delegateVoteDto) {
+    return this.appService.delegateVote(body.address);
+  }
+
+  @Post('cast-vote')
+  castVote(@Body() body: castVoteDto) {
+    return this.appService.castVote(body.proposalNumber, body.voteAmount);
   }
 }

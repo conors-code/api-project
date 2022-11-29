@@ -13,6 +13,7 @@ export class AppService {
   tokenVoteContractAddr: string;
   ballotConnected: boolean;
   signerWallet: Wallet;
+  signedBallotContract: ethers.Contract;
 
   constructor(private configService: ConfigService) {
     const alchemyApiKey = this.configService.get<string>('ALCHEMY_API_KEY');
@@ -63,32 +64,63 @@ export class AppService {
 
   async connectBallot(ballotContractAddress: string) {
     const signer = this.signerWallet.connect(this.provider);
-    
+
     const ballotContract = new ethers.Contract(
       ballotContractAddress,
       ballotJson.abi,
       signer,
     );
 
-    const signedballotContract = ballotContract.connect(signer);
+    this.signedBallotContract = ballotContract.connect(signer);
     /*console.log(
       `getting ProposalInfo[] using ballot address ${signedballotContract.address}.`
     );*/
-    const proposalInfosTx = await signedballotContract.proposalsInfo();
-    
+    const proposalInfosTx = await this.signedBallotContract.proposalsInfo();
+
     console.log(`proposalInfosTx Tx .hash is ${proposalInfosTx.hash}`);
     /*console.log(
       `after awaiting proposalInfo Tx ${proposalInfosTx.hash}`,
     );*/
 
-    console.log("start JSON.stringify(proposalInfosTx)");
+    console.log('start JSON.stringify(proposalInfosTx)');
 
     console.log(JSON.stringify(proposalInfosTx));
-    console.log("end JSON.stringify(proposalInfosTx)");
+    console.log('end JSON.stringify(proposalInfosTx)');
 
     // TODO: Attach to the contract address
     return {
-      result: proposalInfosTx
+      result: proposalInfosTx,
+    };
+  }
+
+  async delegateVote(delegatee: string) {
+    const signer = this.signerWallet.connect(this.provider);
+    const voteTokenContract = new ethers.Contract(
+      this.tokenVoteContractAddr,
+      tokenJson.abi,
+      signer,
+    );
+    const signedVoteTokenContract = voteTokenContract.connect(signer);
+
+    const delegateTx = await signedVoteTokenContract.delegate(delegatee);
+
+    const delegateReceipt = await delegateTx.wait();
+
+    return {
+      result: delegateReceipt.transactionHash,
+    };
+  }
+
+  async castVote(proposalNumber: number, voteAmount: number) {
+    const voteTx = await this.signedBallotContract.vote(
+      proposalNumber,
+      voteAmount,
+    );
+
+    const voteReceipt = await voteTx.wait();
+
+    return {
+      result: voteReceipt.transactionHash,
     };
   }
 }
